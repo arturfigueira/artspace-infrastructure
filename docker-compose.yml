@@ -1,0 +1,118 @@
+version: "3"
+services:
+  appusrdb:
+    image: "postgres:13.5"
+    container_name: "appusrdb"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=q0HOR43SXu6tFX0z
+    volumes:
+      - ./appusrdb/postgres-data:/var/lib/postgresql/data
+      - ./appusrdb/db-init/appuser-create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  postdb:
+    image: mongo:4.0.10
+    container_name: "postdb"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: DgTk7Ax2FGzfp1Os
+      MONGO_INITDB_DATABASE: postman
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./postdb/mongo-data:/data/db
+      - ./postdb/db-init/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+  zookeeper-1:
+    container_name: "core-zoo-1"
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    volumes:
+      - ./streams/data/zoo-1/data:/var/lib/zookeeper/data
+      - ./streams/data/zoo-1/log:/var/lib/zookeeper/log
+  zookeeper-2:
+    container_name: "core-zoo-2"
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 32181:2181
+    volumes:
+      - ./streams/data/zoo-2/data:/var/lib/zookeeper/data
+      - ./streams/data/zoo-2/log:/var/lib/zookeeper/log
+
+  kafka-1:
+    container_name: "core-kafka-1"
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./streams/data/broker-1/data:/var/lib/kafka/data
+      - ./streams/data/broker-1/secrets:/etc/kafka/secrets
+  kafka-2:
+    container_name: "core-kafka-2"
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - kafka-1
+    ports:
+      - 39092:39092
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Start: Sleep 15 seconds'
+      sleep 30;
+      wait;
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka-1:9092 --create --if-not-exists --topic identity.cdc.appusers.0 --partitions 10 --replication-factor 1
+      echo -e 'Starting Image'
+      /etc/confluent/docker/run
+      "
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,PLAINTEXT_HOST://localhost:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./streams/data/broker-2/data:/var/lib/kafka/data
+      - ./streams/data/broker-2/secrets:/etc/kafka/secrets
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "29080:8080"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=artspace-core-kafka
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-1:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=localhost:29092
+
+  coremonitor:
+    image: "prom/prometheus:v2.32.1"
+    container_name: "coremonitor"
+    ports:
+      - 9090:9090
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
