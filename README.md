@@ -1,14 +1,15 @@
 # artspace-infrastructure
+
 ARTSpace Infrastructure
 
-Initial Infrastructure for a Prototype of the app. 
+Initial Infrastructure for a Prototype of the app.
 
 _This is not, by any means, a production ready setup_
 
-## Services 
+## Services
 
 | Service     | Application | Description           |
-|-------------|-------------|-----------------------|
+| ----------- | ----------- | --------------------- |
 | appuserdb   | Postgres    | AppUser main database |
 | postdb      | Mongo       | Post main database    |
 | core-zoo-1  | ZooKeeper   | Core Kafka Cluster    |
@@ -17,3 +18,22 @@ _This is not, by any means, a production ready setup_
 | kafka-2     | Kafka       | Core Kafka Cluster    |
 | kafka-ui    | Kafka-Ui    | Kafka Mngmt Interface |
 | coremonitor | Prometheus  | Monitoring            |
+| userredis   | Redis       | AppUser Cache         |
+
+## Utilities
+
+### Cleanup Script
+
+Remove all volumes that are created while running the containers
+
+**Windows**
+
+```powershell
+> ./cleanup.ps1
+```
+
+**Linux**
+
+```shell
+> ./cleanup.sh
+```

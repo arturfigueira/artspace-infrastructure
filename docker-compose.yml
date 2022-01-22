@@ -116,3 +116,13 @@ services:
       - 9090:9090
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  userredis:
+    container_name: "userredis"
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass Awob8q5yjpZ6xxAv
+    volumes:
+      - ./cache/redis-data:/data
