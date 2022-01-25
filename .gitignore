@@ -1,6 +1,10 @@
 #Database Data
 appusrdb/postgres-data
 postdb/mongo-data
+cache/redis-data
 
 #Streams Data
 streams/data
+
+#IDE
+.idea
