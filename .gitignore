@@ -1,5 +1,5 @@
 #Database Data
-appusrdb/postgres-data
+coredb/postgres-data
 postdb/mongo-data
 cache/redis-data
 

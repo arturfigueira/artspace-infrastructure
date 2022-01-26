@@ -10,7 +10,7 @@ _This is not, by any means, a production ready setup_
 
 | Service     | Application | Description           |
 | ----------- | ----------- | --------------------- |
-| appuserdb   | Postgres    | AppUser main database |
+| coredb      | Postgres    | Shared core database  |
 | postdb      | Mongo       | Post main database    |
 | core-zoo-1  | ZooKeeper   | Core Kafka Cluster    |
 | core-zoo-2  | ZooKeeper   | Core Kafka Cluster    |
@@ -18,7 +18,7 @@ _This is not, by any means, a production ready setup_
 | kafka-2     | Kafka       | Core Kafka Cluster    |
 | kafka-ui    | Kafka-Ui    | Kafka Mngmt Interface |
 | coremonitor | Prometheus  | Monitoring            |
-| userredis   | Redis       | AppUser Cache         |
+| coreredis   | Redis       | Shared Core Cache     |
 
 ## Utilities
 
