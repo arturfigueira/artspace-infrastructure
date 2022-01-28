@@ -1,16 +1,16 @@
 version: "3"
 services:
-  appusrdb:
+  coredb:
     image: "postgres:13.5"
-    container_name: "appusrdb"
+    container_name: "coredb"
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=q0HOR43SXu6tFX0z
     volumes:
-      - ./appusrdb/postgres-data:/var/lib/postgresql/data
-      - ./appusrdb/db-init/appuser-create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./coredb/postgres-data:/var/lib/postgresql/data
+      - ./coredb/db-init/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   postdb:
     image: mongo:4.0.10
@@ -118,8 +118,8 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
 
-  userredis:
-    container_name: "userredis"
+  coreredis:
+    container_name: "coreredis"
     image: redis:6.2-alpine
     restart: always
     ports:

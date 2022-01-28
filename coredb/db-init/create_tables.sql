@@ -36,3 +36,24 @@ GRANT ALL PRIVILEGES ON DATABASE postgres TO appuser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO appuser;
 
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO appuser;
+
+
+-- Creation of archive table
+CREATE SEQUENCE seq_archive_id START 1;
+
+CREATE TABLE archive (
+	id int8 NOT NULL,
+	postId varchar(100) NOT NULL,
+	username varchar(50) NOT NULL,
+	creationtime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT archive_pkey PRIMARY KEY (id)
+);
+
+--Create User and set privileges
+CREATE ROLE feeduser WITH LOGIN PASSWORD 'mW5Plws16hmAS6nD';
+
+GRANT ALL PRIVILEGES ON DATABASE postgres TO feeduser;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO feeduser;
+
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO feeduser;
